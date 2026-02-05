@@ -24,14 +24,14 @@ $r^{AI}_t = \alpha + \beta_M r^{SPY}_t + \beta_{Tech} r^{XLK}_t + \beta_{Rates} 
 - Crash event: drawdown >=20% over horizon (3/6/12 months)
 
 ## Output artifacts
-- figures/gsadf_bubble_overlay.png
-- figures/ai_vs_controls.png
-- figures/calibration_3m.png
-- figures/lppl_tc_hist.png
-- results/table_descriptive.csv / .tex
-- results/table_crash_probs.csv / .tex
+- figures/explosive_ai_vs_control.png (main figure)
+- figures/ai_vs_controls.png (appendix)
+- figures/calibration_3m.png (appendix)
+- figures/lppl_tc_hist.png (appendix)
+- results/table_explosive.csv / .tex
 - results/table_gsadf_compare.csv / .tex
-- results/table_robustness.csv / .tex
+- results/table_concentration.csv / .tex
+- results/table_crash_probs.csv / .tex
 - results/stats.txt
 - results/breadth.csv, results/dispersion.csv, results/hhi_return.csv
 - results/lppl_tc_samples.csv

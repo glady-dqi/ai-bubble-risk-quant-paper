@@ -117,16 +117,55 @@ sgsadf_nonai_semi_res = gsadf(res_nonai_semi.tail(800), step=25)
 # rolling adf + bubble overlay
 adf_roll = rolling_adf(ai_basket, window=200)
 bubble = adf_roll > crit
+
+# episode counts and fraction flagged
+
+def count_episodes(flag_series):
+    flag = flag_series.fillna(False).astype(int)
+    return ((flag.diff() == 1).sum())
+
+fraction_ai = bubble.mean()
+episodes_ai = count_episodes(bubble)
+
+# residual bubble
+adf_ai_res = rolling_adf(res_ai, window=200)
+bubble_ai_res = adf_ai_res > crit
+fraction_ai_res = bubble_ai_res.mean()
+episodes_ai_res = count_episodes(bubble_ai_res)
+
+# controls raw/residual
+adf_nonai = rolling_adf(nonai_tech, window=200)
+bubble_nonai = adf_nonai > crit
+fraction_nonai = bubble_nonai.mean()
+episodes_nonai = count_episodes(bubble_nonai)
+
+adf_nonai_res = rolling_adf(res_nonai, window=200)
+bubble_nonai_res = adf_nonai_res > crit
+fraction_nonai_res = bubble_nonai_res.mean()
+episodes_nonai_res = count_episodes(bubble_nonai_res)
+
+# table: explosive dynamics
+exp_table = pd.DataFrame([
+    ['AI basket (raw)', sgsadf_ai, episodes_ai, fraction_ai],
+    ['AI basket (residual)', sgsadf_ai_res, episodes_ai_res, fraction_ai_res],
+    ['Non-AI tech (raw)', sgsadf_nonai, episodes_nonai, fraction_nonai],
+    ['Non-AI tech (residual)', sgsadf_nonai_res, episodes_nonai_res, fraction_nonai_res],
+], columns=['Series','GSADF','Episodes','Fraction flagged'])
+exp_table.to_csv('results/table_explosive.csv', index=False)
+exp_table.to_latex('results/table_explosive.tex', index=False, float_format="%.4f")
+
+# main figure: AI vs control with explosive episodes
 plt.figure(figsize=(8,4))
 ax = plt.gca()
-ax.plot(ai_basket.index, ai_basket.values, label='AI Basket')
-ax.fill_between(ai_basket.index, ai_basket.min(), ai_basket.max(), where=bubble.reindex(ai_basket.index, method='ffill').fillna(False), color='red', alpha=0.1, label='Explosive episodes')
-ax.set_title('AI Basket with Explosive Episodes')
+ax.plot(ai_basket.index, ai_basket/ai_basket.iloc[0], label='AI Basket')
+ax.plot(nonai_tech.index, nonai_tech/nonai_tech.iloc[0], label='Non-AI Tech')
+ax.fill_between(ai_basket.index, 0, (ai_basket/ai_basket.iloc[0]).max(), where=bubble.reindex(ai_basket.index, method='ffill').fillna(False), color='red', alpha=0.1, label='Explosive episodes (AI)')
+ax.set_title('AI vs Non-AI Tech with Explosive Episodes')
 ax.legend()
 plt.tight_layout()
-plt.savefig('figures/gsadf_bubble_overlay.png', dpi=150)
+plt.savefig('figures/explosive_ai_vs_control.png', dpi=150)
 
-# overlay AI vs controls
+# additional overlay (appendix)
 plt.figure(figsize=(8,4))
 plt.plot(ai_basket.index, ai_basket/ai_basket.iloc[0], label='AI Basket')
 plt.plot(nonai_tech.index, nonai_tech/nonai_tech.iloc[0], label='Non-AI Tech')
@@ -137,11 +176,10 @@ plt.legend()
 plt.tight_layout()
 plt.savefig('figures/ai_vs_controls.png', dpi=150)
 
-# LPPL sensitivity
+# LPPL sensitivity (appendix)
 window = 500
 params = fit_lppl(ai_basket.tail(window))
 
-# rolling LPPL tc distribution
 tc_list = []
 for i in range(0, 200, 20):
     series = ai_basket.iloc[-(window+i):-i if i>0 else None]
@@ -195,7 +233,6 @@ plt.ylabel('Observed')
 plt.tight_layout()
 plt.savefig('figures/calibration_3m.png', dpi=150)
 
-# Save probs
 probs_3m.to_csv('results/crash_prob_3m.csv')
 
 # Tables
