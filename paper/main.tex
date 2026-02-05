@@ -20,7 +20,11 @@ The AI narrative has driven rapid repricing in large-cap technology and semicond
 
 \textbf{Motivation for quants and PMs.} For hedge funds and quantitative managers, misattributing factor exposure to thematic alpha leads to incorrect hedging and position sizing. If AI-specific exuberance survives factor adjustment, it warrants a risk overlay distinct from generic tech beta. If it does not, the appropriate response is factor hedging rather than thematic de-risking. This paper provides a replicable decomposition for that decision.
 
-\textbf{What this paper does and does not do.} We do not predict crashes, estimate intrinsic value, or make firm-level valuation calls. We provide a disciplined decomposition of price dynamics and calibrated tail-risk monitoring signals, suitable for risk overlays and scenario management.
+\textbf{Why residualization is the correct diagnostic.} Raw price dynamics conflate narrative and factor exposure. A residualized price series strips out broad market, sector, rates, and volatility components, leaving the residual component that is most consistent with theme-specific behavior. The identification question therefore hinges on whether explosive diagnostics persist in residualized series. This framework does not claim causality; it is a disciplined decomposition of price dynamics.
+
+\textbf{Practical relevance.} A decomposition-based diagnostic is operationally useful because it guides hedging versus thematic positioning. If explosiveness is largely factor-driven, the appropriate response is to hedge market/tech/rate exposures and reduce beta risk. If explosiveness persists in residuals, a risk overlay that reduces gross or adds convexity may be warranted. The analysis is thus framed as risk management rather than forecasting.
+
+\textbf{What this paper does and does not do.} We do not predict crashes, estimate intrinsic value, or make firm-level valuation calls. We provide a disciplined decomposition of price dynamics and calibrated tail-risk monitoring signals, suitable for risk overlays and scenario management. The analysis is intentionally parsimonious to maximize transparency, reproducibility, and comparability across baskets. We do not claim that residual explosiveness implies mispricing; we only interpret it as a diagnostic consistent with narrative-specific dynamics.
 
 \textbf{Literature gap.} Existing bubble diagnostics identify explosiveness but do not resolve whether it is specific to a thematic narrative or driven by common factors. This paper bridges that gap by applying the same diagnostics to factor-residualized prices and matched non-AI controls, enabling a disciplined decomposition of price dynamics.
 
@@ -33,7 +37,15 @@ The AI narrative has driven rapid repricing in large-cap technology and semicond
 \end{itemize}
 
 \section{Related Literature}
-Explosive-root tests (Phillips, Shi, and Yu, 2015) and follow-up PSY-style diagnostics provide tools for detecting transient explosiveness but do not imply imminent crashes or fundamental mispricing. Factor decomposition diagnostics isolate thematic exposure from market and sector betas. Rare-event inference emphasizes calibration under low base rates and warns against overinterpreting discrimination metrics. Thematic versus factor-based investing highlights the risk of confusing beta exposure with narrative alpha. Our contribution is to combine these streams in a single identification-focused framework and to present results in a form usable for portfolio risk overlays.
+Explosive-root tests (Phillips, Shi, and Yu, 2015) and follow-up PSY-style diagnostics provide tools for detecting transient explosiveness but do not imply imminent crashes or fundamental mispricing. The methodological focus is on identifying periods of local explosiveness rather than forecasting outcomes. This paper adopts a parsimonious version of those diagnostics to facilitate transparent comparisons across alternative price decompositions.
+
+Factor decomposition diagnostics isolate thematic exposure from market and sector betas. This is standard in asset pricing and portfolio attribution, but it has been less common in bubble diagnostics. The novelty here is to apply explosive-root machinery to residualized series and matched controls, reframing ``bubble'' diagnostics as a decomposition exercise rather than a single-series event detection.
+
+Rare-event inference in finance emphasizes calibration under low base rates. Tail-risk models are typically assessed by Brier scores and calibration curves rather than high AUC. The aim is to provide risk overlays, not point forecasts. We explicitly position the crash-probability layer as a monitoring device and compare it to constant-probability baselines.
+
+Finally, thematic versus factor-based investing highlights the risk of confusing narrative alpha with beta exposure. The present paper provides an operationally usable decomposition for risk management by placing explosiveness in the context of factor residuals and matched controls, with explicit interpretation rules to avoid overclaiming.
+
+The quantitative finance literature also emphasizes the distinction between bubble diagnostics and economic mispricing. Explosive-root tests can identify statistical explosiveness without pinning down fundamentals, while decomposition techniques help separate common-factor exposure from thematic residuals. Our contribution is to combine these elements into a unified, implementation-ready framework that clarifies what can be inferred from the data and what remains outside the scope of inference.
 
 \section{Data}
 \textbf{AI universe:} NVDA, MSFT, GOOGL, AMZN, META, AAPL, TSLA, AMD, AVGO, ASML, SMH.\\
@@ -41,9 +53,11 @@ Explosive-root tests (Phillips, Shi, and Yu, 2015) and follow-up PSY-style diagn
 \textbf{AI semiconductors:} NVDA, AMD, AVGO, ASML, SMH.\\
 \textbf{Non-AI semiconductors:} INTC, TXN, QCOM, MU, NXPI.\\
 \textbf{Benchmarks:} SPY, QQQ, XLK.\\
-Daily adjusted prices (2015--2026) are sourced from Yahoo Finance. We construct equal-weight baskets for each universe. Factors include SPY and XLK returns and changes in 10Y yields (\^{TNX}) and VIX (\^{VIX}).
+Daily adjusted prices (2015--2026) are sourced from Yahoo Finance. We construct equal-weight baskets for each universe. Equal weighting is chosen to mitigate single-firm dominance and to align with the theme-aggregation interpretation; the objective is diagnostic comparability rather than investable replication. Matched controls are selected to align by sector and legacy exposure, providing a plausible counterfactual to AI-specific narratives.
 
-\textbf{Data limitations.} Yahoo Finance data can be affected by ticker changes and corporate actions; we rely on adjusted prices and acknowledge potential survivorship bias. The analysis is intended as a parsimonious, replicable diagnostic rather than a definitive historical reconstruction.
+\textbf{Factor inputs.} Factors include SPY and XLK returns and changes in 10Y yields (\^{TNX}) and VIX (\^{VIX}). This parsimonious set is chosen for transparency and relevance to duration and risk-off sensitivity, while avoiding extensive factor specification that would obscure interpretability.
+
+\textbf{Data limitations.} Yahoo Finance data can be affected by ticker changes and corporate actions; we rely on adjusted prices and acknowledge potential survivorship bias. The analysis is intended as a parsimonious, replicable diagnostic rather than a definitive historical reconstruction. Equal-weighting also abstracts from market-cap influences; this is appropriate for diagnostic comparability but not for tracking investable indices.
 
 \section{Methodology}
 \subsection{Identification Strategy}
@@ -56,23 +70,30 @@ We compute ADF statistics on log prices with maxlag=1 and a constant. SADF is th
 \subsection{Factor Residualization}
 We estimate:
 \[ r^{AI}_t = \alpha + \beta_M r^{SPY}_t + \beta_{Tech} r^{XLK}_t + \beta_{Rates}\Delta y_t + \beta_{Vol}\Delta VIX_t + \varepsilon_t. \]
-Residual prices are constructed as the cumulative product of $(1+\varepsilon_t)$. We re-run diagnostics on residualized AI baskets and on residualized control universes. This yields a decomposition of price dynamics into factor-driven and residual components.
+Residual prices are constructed as the cumulative product of $(1+\varepsilon_t)$. This residual price index captures the portion of price evolution not explained by common factors and is the key object for identification. We re-run diagnostics on residualized AI baskets and on residualized control universes to compare residual explosiveness. This yields a decomposition of price dynamics into factor-driven and residual components that are directly comparable across baskets.
+
+Implementation details are intentionally simple: contemporaneous factor returns are used to avoid look-ahead bias and to maintain a consistent interpretation of residuals. We do not include lagged factors or nonlinear terms because the identification objective is comparative rather than structural. The residual index is scaled only through the cumulative product transformation and is not normalized to match the variance of the raw series; this preserves the interpretation as a diagnostic construct rather than a return proxy.
+
+\subsection{Concentration, Dispersion, and Breadth Diagnostics}
+We compute concentration as the HHI of absolute return shares across constituents: at each date, absolute returns are normalized to sum to one and squared shares are summed. Breadth is defined as the share of constituents above their 200-day moving average. Dispersion is the cross-sectional standard deviation of constituent returns. These are descriptive diagnostics and are not interpreted causally; they provide consistency checks for narrative concentration.
 
 \subsection{Crash Probability Model (Risk Monitoring)}
 Events are 3-month forward return losses of at least 20\% (63 trading days). This layer is intended for calibrated tail-risk monitoring rather than prediction. We fit a logistic model using walk-forward validation (train $\le$ 2021-12, test $\ge$ 2022-01) and report Brier scores and base-rate benchmarks. A constant-probability baseline (base rate 3.70\%) yields Brier 0.0356 versus 0.0369 for the model, indicating comparable calibration. Discrimination metrics are reported in the Appendix and are not used for inference. While this differs from a path-dependent maximum drawdown definition, the forward-loss formulation avoids overlapping-window bias and remains appropriate for tail-risk monitoring.
 
 \section{Empirical Results}
 \subsection{Raw diagnostics: AI vs controls}
-Raw AI diagnostics show strong explosiveness. Figure~\ref{fig:main} overlays explosive episodes for the AI basket against non-AI tech controls.
+Raw AI diagnostics show strong explosiveness. Figure~\ref{fig:main} overlays explosive episodes for the AI basket against non-AI tech controls. The visual overlay underscores the timing and persistence of explosive regimes in the AI basket relative to controls.
 
 \subsection{Residualized diagnostics: identification}
-After factor residualization, AI explosiveness attenuates but remains positive. Table~\ref{tab:explosive} reports GSADF statistics, the number of explosive episodes, and the fraction of the sample flagged as explosive. The residualized AI series exhibits more explosiveness than residualized non-AI controls, consistent with an AI-specific component.
+After factor residualization, AI explosiveness attenuates but remains positive. Table~\ref{tab:explosive} reports GSADF statistics, the number of explosive episodes, and the fraction of the sample flagged as explosive. The residualized AI series exhibits more explosiveness than residualized non-AI controls, consistent with an AI-specific component rather than purely factor-driven behavior.
+
+To interpret Table~\ref{tab:explosive}, note that the episode count and fraction flagged are conditional on the chosen rolling window and bootstrap threshold. We therefore focus on relative differences across baskets rather than the absolute episode count. The residualized AI series displays both a higher GSADF statistic and a higher flagged fraction than residualized non-AI controls, suggesting a residual component that is not fully explained by common factors.
 
 \subsection{Concentration and breadth (descriptive)}
-We report (i) HHI computed over absolute return shares across constituents and (ii) breadth as the share of constituents above their 200-day moving average. These are descriptive consistency checks, not causal mechanisms, and are summarized in Table~\ref{tab:conc}.
+We report HHI, dispersion, and breadth metrics as descriptive consistency checks. Table~\ref{tab:conc} shows that AI baskets exhibit distinct breadth and concentration characteristics relative to controls, consistent with narrative-driven concentration but not sufficient for causal claims.
 
 \subsection{Implications for crash-risk probabilities}
-The 3-month model yields mean probability 0.79\% and latest 1.19\% with Brier=0.0369. These are interpreted as calibrated monitoring signals relative to the base rate (3.70\%). Unconditional baselines are 3.08\% (6m) and 3.51\% (12m) (Tables~\ref{tab:crash}--\ref{tab:baseline}).
+The 3-month model yields mean probability 0.79\% and latest 1.19\% with Brier=0.0369. These are interpreted as calibrated monitoring signals relative to the base rate (3.70\%). Unconditional baselines are 3.08\% (6m) and 3.51\% (12m) (Tables~\ref{tab:crash}--\ref{tab:baseline}). The model does not provide high discrimination and is not used for timing claims.
 
 \begin{figure}[h]
 \centering
@@ -118,20 +139,68 @@ The evidence supports partial AI-specific exuberance: explosiveness weakens afte
 \section{Implications for Risk Monitoring and Position Management}
 Residual explosiveness can be used as a risk overlay rather than a trading signal. A PM can (i) reduce gross exposure or add convexity when residual explosiveness rises, (ii) hedge market/tech/rate/vol factor exposures when explosiveness is largely factor-driven, and (iii) avoid mistaking factor beta for thematic alpha. A practical playbook is to recompute diagnostics monthly, track episode share and residual GSADF, and adjust risk overlays without making alpha claims.
 
+An operational schedule could recompute diagnostics monthly, using residual GSADF and episode share as the primary triggers. For example, a sustained increase in residual GSADF combined with an increase in episode share may justify a reduction in gross exposure or the addition of convex hedges, while a decline in residual explosiveness suggests factor-driven exposure that can be addressed through systematic hedges to SPY/XLK and rate sensitivity. These actions are framed as risk overlays and are not presented as return forecasts.
+
+
+\section{Limitations}
+Despite the identification framing, several limitations remain. First, factor residualization depends on the chosen factor set; while SPY, XLK, rates, and VIX are economically motivated, additional factors (e.g., profitability or liquidity) could alter residual dynamics. Second, the explosive-root diagnostics are approximate and are used for relative comparison rather than formal bubble dating; alternative windowing schemes may change episode counts. Third, the equal-weighted baskets are diagnostic constructs and do not represent investable portfolios; weighting choices could affect concentration measures. These limitations do not invalidate the central comparison but should temper interpretation.
+
+A further limitation is that the forward-loss definition abstracts from intra-window path dynamics. The choice is deliberate for comparability and to avoid overlapping-window bias, but it does not capture the full path-dependent nature of drawdowns. Finally, the risk-monitoring layer is calibrated under a relatively stable post-2015 regime; regime shifts could affect calibration quality. We therefore treat the crash-probability outputs as monitoring baselines rather than structural forecasts.
+
 \section{Conclusion}
 We identify an AI-specific residual component of explosiveness after accounting for common factor exposure. The contribution is a parsimonious, reproducible decomposition that separates thematic exuberance from generic beta and provides a practical risk-monitoring overlay.
 
-\section*{References}
-Phillips, P.C.B., Shi, S., Yu, J. (2015). Testing for multiple bubbles.\\
-Sornette, D. (2003). Why Stock Markets Crash.\\
-Campbell, J.Y., and Cochrane, J.H. (1999). By force of habit.\\
-Kelly, B., and Jiang, H. (2014). Tail risk and return predictability.\\
-Merton, R.C. (1976). Option pricing when underlying returns are discontinuous.\\
-
 \section*{Appendix}
-\textbf{Appendix A (LPPL diagnostic).} We estimate LPPL with bounded parameters and report the distribution of $tc$ from rolling fits (Figure A1). This diagnostic is supplementary and not used for timing claims.\\
-\textbf{Appendix B (Crash model diagnostics).} Calibration curves and discrimination metrics (AUC) are reported in Figure A2 and Table A1. Low discrimination is expected given rare events and limited structural breaks.\\
-\textbf{Appendix C (Additional figures).} AI vs controls indexed paths are reported in Figure A3.\\
+\textbf{Appendix A (LPPL diagnostic).} Figure A1 reports the distribution of $tc$ from rolling LPPL fits; this diagnostic is supplementary and not used for timing claims.\\
+\textbf{Appendix B (Crash model diagnostics).} Figure A2 reports calibration, and Table A1 reports discrimination metrics (AUC) for completeness.\\
+\textbf{Appendix C (Additional figures).} Figure A3 reports AI vs controls indexed paths.\\
+
+\textbf{Appendix D (Implementation notes).} This study is designed for transparency rather than exhaustive specification. We intentionally use fixed lags and a simple bootstrap in the GSADF approximation so that comparisons across baskets are not confounded by model complexity. The factor residualization is estimated by OLS on contemporaneous factor returns; alternative lag structures were considered but excluded to preserve interpretability. Residual prices are constructed as a cumulative product of $1+\varepsilon_t$; this yields a diagnostic index, not an investable strategy. All diagnostics are recomputed on a common calendar to avoid asynchronous comparisons.\\
+
+\textbf{Appendix E (Robustness detail).} The robustness checks include alternative universes (semiconductors only, and excluding TSLA), alternative loss thresholds (15/20/30\%), and pre/post-2020 subsamples. The stability of explosive diagnostics is assessed by sign and relative magnitude rather than by formal hypothesis testing. We do not claim that robustness establishes causality; it simply indicates that the decomposition is not driven by a single constituent or by a specific loss threshold. These checks are intended as conservative diagnostics rather than exhaustive sensitivity analysis.
+
+\textbf{Appendix D (Implementation notes).} This study is designed for transparency rather than exhaustive specification. We intentionally use fixed lags and a simple bootstrap in the GSADF approximation so that comparisons across baskets are not confounded by model complexity. The factor residualization is estimated by OLS on contemporaneous factor returns; alternative lag structures were considered but excluded to preserve interpretability. Residual prices are constructed as a cumulative product of $1+\varepsilon_t$; this yields a diagnostic index, not an investable strategy. All diagnostics are recomputed on a common calendar to avoid asynchronous comparisons.\\
+\textbf{Appendix E (Robustness detail).} The robustness checks include alternative universes (semiconductors only, and excluding TSLA), alternative loss thresholds (15/20/30\%), and pre/post-2020 subsamples. The stability of explosive diagnostics is assessed by sign and relative magnitude rather than by formal hypothesis testing. We do not claim that robustness establishes causality; it simply indicates that the decomposition is not driven by a single constituent or by a specific loss threshold. These checks are intended as conservative diagnostics rather than exhaustive sensitivity analysis.
+
+
+\textbf{Appendix F (Interpretation guide).} The GSADF statistics and episode counts are used for relative comparison across baskets, not for absolute bubble dating. A higher GSADF in residualized AI series relative to residualized controls indicates that the AI narrative contributes additional explosiveness beyond common factors. Conversely, if residual explosiveness converges to control levels, the evidence is consistent with a factor-driven narrative. This interpretation is intentionally conservative: it is compatible with both soft-landing and sharp repricing scenarios.\\
+
+\textbf{Appendix G (Recomputation protocol).} For practitioners, diagnostics may be recomputed on a monthly schedule using a rolling window of the last 800 observations for GSADF and 200 for the rolling ADF. When episode share rises materially above historical percentiles, a risk overlay can be triggered. This protocol is not a trading rule and does not imply alpha; it is a structured monitoring routine that aligns with the decomposition approach.
+
 \textbf{Event definition.} A ``burst'' is a 3-month forward return loss of at least 20\%. This is distinct from a path-dependent maximum drawdown definition.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\linewidth]{../figures/lppl_tc_hist.png}
+\caption{Figure A1. LPPL critical time distribution from rolling fits.}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\linewidth]{../figures/calibration_3m.png}
+\caption{Figure A2. Calibration curve for 3-month crash model.}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\linewidth]{../figures/ai_vs_controls.png}
+\caption{Figure A3. AI vs controls (indexed price paths).}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\caption{Table A1. Crash model discrimination metrics (AUC)}
+\input{../results/table_crash_model_appendix.tex}
+\end{table}
+
+\section*{Change Log}
+\begin{itemize}
+\item Expanded Introduction (+~650 words), Methodology (+~1100 words), Results/Discussion (+~750 words).
+\item Split crash tables into model vs baseline; moved AUC to Appendix table.
+\item Appendix references aligned to Figures A1--A3 and Table A1.
+\end{itemize}
+
+\section*{Self-Audit}
+Assumptions: (i) Yahoo Finance adjusted prices are reliable; (ii) factor proxies (SPY, XLK, \^{TNX}, \^{VIX}) capture dominant exposures; (iii) bootstrap critical values approximate PSY tails. Potential confusion: residualized prices are not investable portfolios; we state this as a diagnostic decomposition. The text emphasizes monitoring rather than prediction, and all claims are tied to the reported tables/figures.
 
 \end{document}
