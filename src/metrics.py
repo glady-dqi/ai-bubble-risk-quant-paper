@@ -30,3 +30,14 @@ def rolling_adf(series, window=100):
         stats.append(stat)
         idx.append(y.index[i])
     return pd.Series(stats, index=idx, name='adf')
+
+
+def bootstrap_adf_crit(window=200, sims=300, alpha=0.95):
+    # random walk bootstrap critical for ADF in rolling window
+    stats = []
+    for _ in range(sims):
+        eps = np.random.normal(size=window)
+        rw = np.cumsum(eps)
+        stat = adfuller(rw, maxlag=1, regression='c', autolag=None)[0]
+        stats.append(stat)
+    return np.quantile(stats, alpha)
