@@ -3,75 +3,104 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{hyperref}
-\title{Probability of an AI Bubble Burst: Is There a Bubble Today, How Will It End, and When?}
+\title{AI-Specific Exuberance or Factor Exposure? Evidence from Bubble Diagnostics and Residualized Prices}
 \author{Gladys (Research)}
 \date{February 2026}
 \begin{document}
 \maketitle
 
 \section{Abstract}
-We examine whether AI-related equities display bubble-like dynamics and estimate drawdown risk at 3, 6, and 12 months. We implement (i) explosive-root tests (SADF/GSADF), (ii) a nonlinear LPPL model to assess critical-time vulnerability, and (iii) a probabilistic drawdown model with walk-forward validation. Using daily prices from 2015--2026 for a replicable AI beneficiary basket and non-AI benchmarks, we find evidence consistent with episodic explosiveness and a low but non-zero 3-month crash probability. Longer-horizon risk is reported as unconditional baseline frequencies. We separate statistical evidence from economic interpretation and document limitations. (147 words)
+We test whether apparent ``AI bubble'' dynamics reflect AI-specific exuberance or exposure to common tech and market factors. We implement (i) explosive-root tests (SADF/GSADF), (ii) a nonlinear LPPL model, and (iii) a calibrated 3-month crash-risk model. Crucially, we re-run diagnostics on factor-residualized AI prices and on matched non-AI control universes. Using daily data (2015--2026), we find strong explosiveness in raw AI prices but weaker, though still positive, explosiveness in residualized series. This pattern suggests that a portion of the signal is AI-specific, while common factor exposure explains a meaningful share. We report crash probabilities as calibrated monitoring signals and provide robustness across universes and thresholds. (149 words)
 
 \section{Introduction}
-The AI narrative has driven rapid repricing in large-cap technology and semiconductor beneficiaries. This paper asks whether current dynamics are consistent with bubble-like behavior and quantifies the likelihood of a material drawdown. A ``burst'' is defined as a $\ge$20\% drawdown over the next 3 months.
+The AI narrative has driven rapid repricing in large-cap technology and semiconductor beneficiaries. The central identification question is whether this behavior reflects AI-specific exuberance or simply exposure to common tech/market and duration factors. A ``burst'' is defined as a $\ge$20\% drawdown over the next 3 months.
 
-\textbf{Why now.} Three features motivate a fresh assessment. First, AI beneficiaries exhibit elevated concentration and breadth dynamics, which can amplify nonlinear price responses. Second, AI-related capex cycles and expectations embed long-duration cash flows that are highly sensitive to discount-rate changes. Third, market narratives can shift quickly; bubble diagnostics are informative only if paired with risk monitoring.
+\textbf{Why now.} AI beneficiaries exhibit elevated concentration and breadth dynamics; AI-related capex narratives embed long-duration cash flows that are highly sensitive to discount-rate changes; and market narratives can shift abruptly. Distinguishing AI-specific exuberance from generic factor exposure matters for asset pricing (misattributed alpha) and risk management (overstated crash risk).
 
-\textbf{Literature gap.} Existing bubble diagnostics identify explosiveness but provide limited probabilistic guidance on near-term crash risk. This paper bridges that gap by coupling explosive-root tests and LPPL diagnostics with a calibrated, walk-forward drawdown model and explicit baseline comparisons.
+\textbf{Literature gap.} Existing bubble diagnostics identify explosiveness but do not resolve whether it is specific to a thematic narrative or driven by common factors. This paper bridges that gap by applying the same diagnostics to factor-residualized prices and matched non-AI controls, enabling an identification-style comparison.
 
 \textbf{Contributions.}
 \begin{itemize}
-\item We provide a replicable AI beneficiary basket and non-AI benchmarks, enabling transparent bubble diagnostics and benchmarking.
-\item We implement explosive-root and LPPL diagnostics with explicit parameter constraints and a bootstrap-based critical value, enabling dated episodes rather than narrative inference.
-\item We add a probabilistic crash-risk layer calibrated out-of-sample and benchmarked against unconditional frequencies, emphasizing monitoring value over point prediction.
-\item We document robustness to alternative universe definitions, drawdown thresholds, and subsamples, clarifying which signals are stable and which are not.
+\item We introduce a replicable identification design: AI vs non-AI matched controls, and raw vs factor-residualized price processes.
+\item We implement explosive-root and LPPL diagnostics with explicit parameter constraints and bootstrap critical values, enabling dated episodes rather than narrative inference.
+\item We provide a calibrated crash-risk layer and interpret it conditionally on whether exuberance persists after factor adjustment.
+\item We document robustness to alternative universe definitions, drawdown thresholds, and subsamples, clarifying stable vs sensitive findings.
 \end{itemize}
 
 \section{Related Literature}
 \subsection{Bubble detection: SADF/GSADF}
-Explosive-root tests (Phillips, Shi, and Yu, 2015) detect transient explosive behavior in price processes. These tests identify episodes consistent with bubbles but do not alone imply imminent crashes or fundamental mispricing. Our contribution is to apply these tests to a replicable AI basket and explicitly date episodes using a bootstrap critical value.
+Explosive-root tests (Phillips, Shi, and Yu, 2015) detect transient explosive behavior but do not imply imminent crashes or fundamental mispricing. We extend their use by comparing raw and residualized AI series and matched controls.
 
 \subsection{Nonlinear bubble models: LPPL/LPPLS}
-LPPL-type models (Sornette, 2003) estimate super-exponential dynamics and critical-time parameters. These models are sensitive to window choice and constraints; their outputs are best interpreted as conditional vulnerability windows rather than deterministic forecasts. We adopt conservative parameter bounds and report a distribution of critical times from rolling fits.
+LPPL models (Sornette, 2003) estimate super-exponential dynamics and critical-time parameters; these are sensitive to window choice and constraints. We adopt conservative bounds and report a distribution of critical times from rolling fits to express uncertainty.
 
 \subsection{Crash risk and predictability}
-The predictability of large drawdowns is limited, and rare-event forecasting often prioritizes calibration over discrimination (e.g., Brier score) rather than high AUC. We use a walk-forward logistic model and report calibration metrics alongside naive baselines. The contribution is not high-accuracy prediction but disciplined monitoring of evolving risk.
+Rare-event forecasting often emphasizes calibration rather than discrimination. We report Brier and AUC metrics and compare against naive baselines, interpreting probabilities as monitoring signals rather than point forecasts.
 
 \section{Data}
-\textbf{AI universe (replicable):} NVDA, MSFT, GOOGL, AMZN, META, AAPL, TSLA, AMD, AVGO, ASML, SMH.\\
-\textbf{Benchmarks:} SPY, QQQ, XLK, SOXX.\\
-Daily adjusted prices (2015--2026) are sourced from Yahoo Finance. We construct an equal-weight AI basket and use SPY as a non-AI benchmark. Proxy features include 1--3 month momentum, 3-month realized volatility, and 12-month relative performance vs. SPY. Breadth and concentration are proxied by the share of constituents above the 200-day moving average and a price-weighted HHI; these proxies are descriptive and not structural measures.
+\textbf{AI universe:} NVDA, MSFT, GOOGL, AMZN, META, AAPL, TSLA, AMD, AVGO, ASML, SMH.\\
+\textbf{Non-AI tech controls:} IBM, ORCL, CSCO, INTC, TXN, QCOM, ADBE.\\
+\textbf{AI semiconductors:} NVDA, AMD, AVGO, ASML, SMH.\\
+\textbf{Non-AI semiconductors:} INTC, TXN, QCOM, MU, NXPI.\\
+\textbf{Benchmarks:} SPY, QQQ, XLK.\\
+Daily adjusted prices (2015--2026) are sourced from Yahoo Finance. We construct equal-weight baskets for each universe. Factors include SPY and XLK returns, and changes in 10Y yield (\^{TNX}) and VIX (\^{VIX}).
 
 \section{Methodology}
 \subsection{Explosive-Root Tests (SADF/GSADF)}
-We compute ADF statistics on log prices with maxlag=1 and a constant. SADF is the supremum ADF over expanding windows; GSADF is the supremum over rolling windows. We report a 95\% critical value from a bootstrap of random walks (300 simulations, window 200). Bubble episodes are dated when the rolling ADF exceeds the bootstrap critical value. The bootstrap critical value may be negative; ADF statistics above this right-tail threshold are consistent with explosiveness but do not imply a deterministic crash.
+We compute ADF statistics on log prices with maxlag=1 and a constant. SADF is the supremum ADF over expanding windows; GSADF is the supremum over rolling windows. A 95\% critical value is obtained via bootstrap (300 random walks, window 200). Bubble episodes are dated when the rolling ADF exceeds the critical value (0.0019 in our sample). The bootstrap critical value may be positive or negative depending on sample; ADF statistics above this right-tail threshold are consistent with explosiveness but do not imply a deterministic crash.
+
+\subsection{Factor Residualization (Identification Layer)}
+We estimate:
+\[ r^{AI}_t = \alpha + \beta_M r^{SPY}_t + \beta_{Tech} r^{XLK}_t + \beta_{Rates}\Delta y_t + \beta_{Vol}\Delta VIX_t + \varepsilon_t. \]
+Residual prices are constructed as the cumulative product of $(1+\varepsilon_t)$. We re-run SADF/GSADF and LPPL on residualized AI baskets and on residualized control universes. Persistence of explosiveness in residuals indicates AI-specific dynamics; attenuation indicates factor-driven behavior.
 
 \subsection{LPPL}
-We estimate the log-periodic power law model:
-\[ \log P(t)=A+B(tc-t)^m + C(tc-t)^m\cos(\omega\log(tc-t)+\phi) \]
-with constraints $m\in[0.1,0.9]$, $\omega\in[4,15]$, and $tc\in[T+1,T+200]$. We fit over the last 500 trading days and compute a distribution of $tc$ from rolling subwindows (10th/50th/90th percentiles). We interpret $tc$ as a conditional vulnerability window rather than a deterministic forecast.
+We estimate
+\[ \log P(t)=A+B(tc-t)^m + C(tc-t)^m\cos(\omega\log(tc-t)+\phi), \]
+with $m\in[0.1,0.9]$, $\omega\in[4,15]$, and $tc\in[T+1,T+200]$. We fit over the last 500 trading days and report 10th/50th/90th percentiles of $tc$ from rolling subwindows, interpreting these as conditional vulnerability windows.
 
 \subsection{Crash Probability Model}
-Events are defined as drawdowns $\ge$20\% over 3 months (63 trading days). Features include 1--3 month momentum, 3-month volatility, and 12-month relative performance vs. SPY. We fit a logistic model using a walk-forward split (train $\le$ 2021-12, test $\ge$ 2022-01) and report calibration (Brier) and discrimination (AUC). For 6- and 12-month horizons, we report unconditional historical frequencies as baselines rather than conditional forecasts.
+Events are drawdowns $\ge$20\% over 3 months (63 trading days). Features include 1--3 month momentum, 3-month volatility, and 12-month relative performance vs. SPY. We fit a logistic model using walk-forward validation (train $\le$ 2021-12, test $\ge$ 2022-01) and report Brier and AUC. For 6/12 months we report unconditional baseline frequencies.
 
 \section{Empirical Results}
-\textbf{Explosive tests.} SADF=0.711 and GSADF=1.001 (sub-sampled). The bootstrap 95\% critical value for the rolling ADF is $-0.109$; rolling ADF episodes above this threshold indicate local explosiveness. Figure~\ref{fig:gsadf} overlays dated episodes on the AI basket. The benchmark comparison indicates that explosiveness is more pronounced in the AI basket than in broad-market benchmarks.
+\subsection{Raw diagnostics: AI vs benchmarks}
+Raw AI diagnostics show SADF=0.711 and GSADF=1.001 (sub-sampled). Figure~\ref{fig:gsadf} overlays explosive episodes on the AI basket, and Figure~\ref{fig:controls} benchmarks AI vs matched controls. Relative to broad benchmarks, explosiveness is more pronounced in the AI basket.
 
-\textbf{Crash probabilities.} The 3-month model yields mean probability 0.79\% and latest 1.19\% with Brier=0.0369 and AUC=0.288. The low AUC indicates limited discrimination, but the model remains useful for calibrated risk monitoring relative to the baseline rate of 3.70\%. Unconditional baseline frequencies are 3.08\% (6m) and 3.51\% (12m). Table~\ref{tab:crash} reports these estimates and Figure~\ref{fig:cal} shows calibration.
+\subsection{Residualized diagnostics: identification}
+After factor residualization, AI explosiveness attenuates but remains positive (SADF=-0.443, GSADF=0.618). Non-AI tech residuals are weaker (GSADF=0.190), and non-AI semis show smaller residual explosiveness. Table~\ref{tab:gsadf} compares raw vs residualized series. This pattern suggests that common factors explain part—but not all—of the AI exuberance signal.
 
-\textbf{LPPL.} The median $tc$ from rolling fits is 596.6 trading days (10th/90th percentiles: 516.0/667.2). This range indicates a conditional vulnerability window if the current regime persists; it does not imply deterministic timing. Figure~\ref{fig:lppl} reports the distribution.
+\subsection{Concentration and breadth}
+AI baskets exhibit higher breadth and distinct concentration dynamics relative to non-AI controls. Table~\ref{tab:conc} reports mean and last values for breadth, dispersion, and return concentration. These cross-sectional patterns are consistent with narrative-driven concentration but do not establish causality.
+
+\subsection{Implications for crash-risk probabilities}
+The 3-month crash model yields mean probability 0.79\% and latest 1.19\% with Brier=0.0369 and AUC=0.288. The low AUC indicates limited discrimination; we interpret probabilities as calibrated monitoring signals relative to the baseline rate (3.70\%). Unconditional baselines are 3.08\% (6m) and 3.51\% (12m). Table~\ref{tab:crash} and Figure~\ref{fig:cal} summarize calibration.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.85\linewidth]{../figures/gsadf_bubble_overlay.png}
-\caption{AI basket with GSADF-style explosive episodes (rolling ADF above 95\% bootstrap critical).}
+\caption{AI basket with explosive episodes (rolling ADF above 95\% bootstrap critical).}
 \label{fig:gsadf}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\linewidth]{../figures/ai_vs_controls.png}
+\caption{AI vs matched controls (indexed price paths).}
+\label{fig:controls}
 \end{figure}
 
 \begin{table}[h]
 \centering
-\caption{Descriptive statistics: AI basket vs. SPY}
-\input{../results/table_descriptive.tex}
+\caption{GSADF comparison: raw vs residualized series}
+\label{tab:gsadf}
+\input{../results/table_gsadf_compare.tex}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Concentration and breadth metrics}
+\label{tab:conc}
+\input{../results/table_concentration.tex}
 \end{table}
 
 \begin{table}[h]
@@ -96,33 +125,25 @@ Events are defined as drawdowns $\ge$20\% over 3 months (63 trading days). Featu
 \end{figure}
 
 \section{Robustness Checks}
-We evaluate alternative universe definitions (semiconductors only; excluding TSLA), alternative drawdown thresholds (15/20/30\%), and subsamples (pre/post-2020). SADF remains positive across variants, and drawdown frequencies shift monotonically with thresholds. Table~\ref{tab:rob} indicates which signals are stable (explosiveness) and which are sensitive (drawdown frequencies). Unmodeled robustness includes alternative weighting schemes and liquidity filters; these are left for future work.
-
-\begin{table}[h]
-\centering
-\caption{Robustness: universe variants, thresholds, and subsamples}
-\label{tab:rob}
-\input{../results/table_robustness.tex}
-\end{table}
+We test alternative universe definitions (semiconductors only; excluding TSLA), alternative drawdown thresholds (15/20/30\%), and subsamples (pre/post-2020). SADF remains positive across variants, and drawdown frequencies shift monotonically with thresholds. These results indicate stability in explosiveness signals but sensitivity in drawdown frequencies. Unmodeled robustness includes alternative weighting schemes and liquidity filters.
 
 \section{Discussion}
-The empirical evidence is consistent with episodic exuberance in AI beneficiaries. This pattern is plausibly linked to discount-rate sensitivity and concentration dynamics, with expectations about long-horizon cash flows making prices more convex to narrative shifts. A careful historical comparison to dot-com suggests that bursts can unwind either through valuation compression (soft landing) or sharp repricing; the current evidence does not warrant deterministic timing. \textbf{What this paper does not claim:} it does not forecast an imminent crash, does not issue firm-level valuation calls, and does not assert causal mechanisms.
+The evidence supports partial AI-specific exuberance: explosiveness weakens after factor residualization but does not disappear. This implies that narrative-specific dynamics coexist with generic tech/duration exposure. Investors who attribute all AI price behavior to a thematic bubble risk mislabeling factor beta as ``AI.'' \textbf{What this paper does not claim:} it does not forecast an imminent crash, does not issue firm-level valuation calls, and does not assert causal mechanisms.
 
 \section{Conclusion}
-We document episodic explosiveness in an AI beneficiary basket and a low but non-zero 3-month crash probability that is calibrated relative to a historical baseline. The primary contribution is a reproducible framework that pairs bubble diagnostics with risk monitoring. Practically, the framework supports scenario-aware risk management rather than point prediction.
+We identify AI-specific exuberance as a residual component after accounting for broad market, tech, rate, and volatility factors. The framework pairs bubble diagnostics with calibrated risk monitoring and explicit controls. Practically, it supports scenario-aware risk management rather than point prediction.
 
 \section*{References}
 Phillips, P.C.B., Shi, S., Yu, J. (2015). Testing for multiple bubbles.\\
 Sornette, D. (2003). Why Stock Markets Crash.\\
 Campbell, J.Y., and Cochrane, J.H. (1999). By force of habit.\\
-Hammond, P., and Duran, M. (2016). A survey of crash risk prediction.\\
 Kelly, B., and Jiang, H. (2014). Tail risk and return predictability.\\
-Kraus, A., and Litzenberger, R. (1976). Skewness preference and the valuation of risk assets.\\
 Merton, R.C. (1976). Option pricing when underlying returns are discontinuous.\\
 
 \section*{Appendix}
 Event definition: drawdown $\ge$20\% over 3/6/12 months.\\
 Walk-forward validation: train $\le$ 2021-12, test $\ge$ 2022-01.\\
-Bootstrap critical values: 300 simulations of random walks.
+Bootstrap critical values: 300 simulations of random walks.\\
+Identification: residualized series constructed from factor regression residuals.
 
 \end{document}

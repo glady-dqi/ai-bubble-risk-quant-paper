@@ -2,20 +2,34 @@ import yfinance as yf
 import pandas as pd
 
 AI_TICKERS = ["NVDA","MSFT","GOOGL","AMZN","META","AAPL","TSLA","AMD","AVGO","ASML","SMH"]
-BENCH_TICKERS = ["SPY","QQQ","XLK","SOXX"]
-ALL = sorted(set(AI_TICKERS + BENCH_TICKERS))
+NONAI_TECH = ["IBM","ORCL","CSCO","INTC","TXN","QCOM","ADBE"]
+AI_SEMI = ["NVDA","AMD","AVGO","ASML","SMH"]
+NONAI_SEMI = ["INTC","TXN","QCOM","MU","NXPI"]
+BENCH_TICKERS = ["SPY","QQQ","XLK"]
+FACTORS = ["^TNX","^VIX"]
+
+ALL = sorted(set(AI_TICKERS + NONAI_TECH + AI_SEMI + NONAI_SEMI + BENCH_TICKERS + FACTORS))
 
 start = "2015-01-01"
 
 data = yf.download(ALL, start=start, auto_adjust=True, progress=False)["Close"]
 data.to_csv("data/prices.csv")
 
-# build equal-weight AI basket
+# build equal-weight baskets
 ai = data[AI_TICKERS].dropna(how="all")
-ai_basket = ai.pct_change().mean(axis=1).add(1).cumprod()
-ai_basket.name = "AI_BASKET"
-bench = data["SPY"].dropna()
+nonai = data[NONAI_TECH].dropna(how="all")
+ai_semi = data[AI_SEMI].dropna(how="all")
+nonai_semi = data[NONAI_SEMI].dropna(how="all")
 
-out = pd.concat([ai_basket, bench], axis=1).dropna()
-out.to_csv("data/ai_vs_spy.csv")
-print("ok", out.tail())
+baskets = pd.DataFrame({
+    "AI_BASKET": ai.pct_change().mean(axis=1).add(1).cumprod(),
+    "NONAI_TECH": nonai.pct_change().mean(axis=1).add(1).cumprod(),
+    "AI_SEMI": ai_semi.pct_change().mean(axis=1).add(1).cumprod(),
+    "NONAI_SEMI": nonai_semi.pct_change().mean(axis=1).add(1).cumprod(),
+    "SPY": data["SPY"],
+    "QQQ": data["QQQ"],
+    "XLK": data["XLK"],
+})
+
+baskets.dropna().to_csv("data/baskets.csv")
+print("ok", baskets.tail())

@@ -8,70 +8,134 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.metrics import sadf, gsadf, rolling_adf, bootstrap_adf_crit
 from src.lppl import fit_lppl
 from src.predict import build_features, build_labels, walk_forward_prob
+from src.factors import build_factors, residualize
 
 prices = pd.read_csv('data/prices.csv', index_col=0, parse_dates=True)
-ai = pd.read_csv('data/ai_vs_spy.csv', index_col=0, parse_dates=True)
+baskets = pd.read_csv('data/baskets.csv', index_col=0, parse_dates=True)
 
-ai_basket = ai['AI_BASKET']
-spy = ai['SPY']
+ai_basket = baskets['AI_BASKET']
+nonai_tech = baskets['NONAI_TECH']
+ai_semi = baskets['AI_SEMI']
+nonai_semi = baskets['NONAI_SEMI']
+spy = baskets['SPY']
+xlk = baskets['XLK']
 
-# Descriptive stats
+# descriptive stats
 ret_ai = ai_basket.pct_change().dropna()
 ret_spy = spy.pct_change().dropna()
 
 def stats(s):
     return pd.Series({
-        'mean_daily': s.mean(),
-        'vol_daily': s.std(),
-        'mean_ann': s.mean()*252,
-        'vol_ann': s.std()*np.sqrt(252),
-        'max_dd': (s.add(1).cumprod()/s.add(1).cumprod().cummax()-1).min()
+        'mean daily': s.mean(),
+        'vol daily': s.std(),
+        'mean ann': s.mean()*252,
+        'vol ann': s.std()*np.sqrt(252),
+        'max dd': (s.add(1).cumprod()/s.add(1).cumprod().cummax()-1).min()
     })
 
 stats_tbl = pd.concat([
     stats(ret_ai).rename('AI Basket'),
     stats(ret_spy).rename('SPY')
 ], axis=1)
-stats_tbl.index = ['mean daily','vol daily','mean ann','vol ann','max dd']
 stats_tbl.to_csv('results/table_descriptive.csv')
 
-# Breadth proxy: share of AI tickers above 200d MA
-ai_prices = prices[[c for c in prices.columns if c in ['NVDA','MSFT','GOOGL','AMZN','META','AAPL','TSLA','AMD','AVGO','ASML','SMH']]].dropna()
-ma200 = ai_prices.rolling(200).mean()
-breadth = (ai_prices > ma200).mean(axis=1)
+# breadth & concentration
+AI_TICKERS = ['NVDA','MSFT','GOOGL','AMZN','META','AAPL','TSLA','AMD','AVGO','ASML','SMH']
+NONAI_TECH = ['IBM','ORCL','CSCO','INTC','TXN','QCOM','ADBE']
+AI_SEMI = ['NVDA','AMD','AVGO','ASML','SMH']
+NONAI_SEMI = ['INTC','TXN','QCOM','MU','NXPI']
+
+ai_prices = prices[AI_TICKERS].dropna()
+nonai_prices = prices[NONAI_TECH].dropna()
+ai_semi_prices = prices[AI_SEMI].dropna()
+nonai_semi_prices = prices[NONAI_SEMI].dropna()
+
+
+def breadth_disp_hhi(px):
+    ma200 = px.rolling(200).mean()
+    breadth = (px > ma200).mean(axis=1)
+    disp = px.pct_change().std(axis=1)
+    rets = px.pct_change().dropna()
+    weights = rets.abs().div(rets.abs().sum(axis=1), axis=0)
+    hhi_ret = (weights**2).sum(axis=1)
+    return breadth, disp, hhi_ret
+
+breadth, disp, hhi_ret = breadth_disp_hhi(ai_prices)
+non_b, non_d, non_h = breadth_disp_hhi(nonai_prices)
+ase_b, ase_d, ase_h = breadth_disp_hhi(ai_semi_prices)
+na_b, na_d, na_h = breadth_disp_hhi(nonai_semi_prices)
+
 breadth.to_csv('results/breadth.csv')
+disp.to_csv('results/dispersion.csv')
+hhi_ret.to_csv('results/hhi_return.csv')
 
-# Concentration proxy: price-weighted HHI
-weights = ai_prices.div(ai_prices.sum(axis=1), axis=0)
-hhi = (weights**2).sum(axis=1)
-hhi.to_csv('results/hhi.csv')
+summary = pd.DataFrame([
+    ['AI basket', breadth.mean(), breadth.iloc[-1], disp.mean(), disp.iloc[-1], hhi_ret.mean(), hhi_ret.iloc[-1]],
+    ['Non-AI tech', non_b.mean(), non_b.iloc[-1], non_d.mean(), non_d.iloc[-1], non_h.mean(), non_h.iloc[-1]],
+    ['AI semis', ase_b.mean(), ase_b.iloc[-1], ase_d.mean(), ase_d.iloc[-1], ase_h.mean(), ase_h.iloc[-1]],
+    ['Non-AI semis', na_b.mean(), na_b.iloc[-1], na_d.mean(), na_d.iloc[-1], na_h.mean(), na_h.iloc[-1]],
+], columns=['Universe','Breadth mean','Breadth last','Dispersion mean','Dispersion last','HHI mean','HHI last'])
+summary.to_csv('results/table_concentration.csv', index=False)
+summary.to_latex('results/table_concentration.tex', index=False, float_format="%.4f")
 
-# SADF/GSADF with bootstrap critical
-sadf_stat = sadf(ai_basket, step=5)
-gsadf_stat = gsadf(ai_basket.tail(800), step=25)
+# factors and residuals
+factors = build_factors(prices)
+res_ai, model_ai = residualize(ai_basket, factors)
+res_nonai, _ = residualize(nonai_tech, factors)
+res_ai_semi, _ = residualize(ai_semi, factors)
+res_nonai_semi, _ = residualize(nonai_semi, factors)
+
+# SADF/GSADF
+sadf_ai = sadf(ai_basket, step=5)
+sgsadf_ai = gsadf(ai_basket.tail(800), step=25)
 crit = bootstrap_adf_crit(window=200, sims=300, alpha=0.95)
 
+# residual diagnostics
+sadf_ai_res = sadf(res_ai, step=5)
+sgsadf_ai_res = gsadf(res_ai.tail(800), step=25)
+
+# controls
+sadf_nonai = sadf(nonai_tech, step=5)
+sgsadf_nonai = gsadf(nonai_tech.tail(800), step=25)
+
+sadf_ai_semi = sadf(ai_semi, step=5)
+sgsadf_ai_semi = gsadf(ai_semi.tail(800), step=25)
+
+sadf_nonai_semi = sadf(nonai_semi, step=5)
+sgsadf_nonai_semi = gsadf(nonai_semi.tail(800), step=25)
+
+# residual controls
+sadf_nonai_res = sadf(res_nonai, step=5)
+sgsadf_nonai_res = gsadf(res_nonai.tail(800), step=25)
+
+sadf_ai_semi_res = sadf(res_ai_semi, step=5)
+sgsadf_ai_semi_res = gsadf(res_ai_semi.tail(800), step=25)
+
+sadf_nonai_semi_res = sadf(res_nonai_semi, step=5)
+sgsadf_nonai_semi_res = gsadf(res_nonai_semi.tail(800), step=25)
+
+# rolling adf + bubble overlay
 adf_roll = rolling_adf(ai_basket, window=200)
-
-# Bubble dating: ADF above critical
 bubble = adf_roll > crit
-
 plt.figure(figsize=(8,4))
 ax = plt.gca()
 ax.plot(ai_basket.index, ai_basket.values, label='AI Basket')
 ax.fill_between(ai_basket.index, ai_basket.min(), ai_basket.max(), where=bubble.reindex(ai_basket.index, method='ffill').fillna(False), color='red', alpha=0.1, label='Explosive episodes')
-ax.set_title('AI Basket with GSADF-style explosive episodes')
+ax.set_title('AI Basket with Explosive Episodes')
 ax.legend()
 plt.tight_layout()
 plt.savefig('figures/gsadf_bubble_overlay.png', dpi=150)
 
-plt.figure()
-adf_roll.plot()
-plt.axhline(crit, color='r', linestyle='--', label='95% critical')
-plt.title('Rolling ADF (200-day)')
+# overlay AI vs controls
+plt.figure(figsize=(8,4))
+plt.plot(ai_basket.index, ai_basket/ai_basket.iloc[0], label='AI Basket')
+plt.plot(nonai_tech.index, nonai_tech/nonai_tech.iloc[0], label='Non-AI Tech')
+plt.plot(ai_semi.index, ai_semi/ai_semi.iloc[0], label='AI Semis')
+plt.plot(nonai_semi.index, nonai_semi/nonai_semi.iloc[0], label='Non-AI Semis')
+plt.title('AI vs Controls (Indexed)')
 plt.legend()
 plt.tight_layout()
-plt.savefig('figures/rolling_adf.png', dpi=150)
+plt.savefig('figures/ai_vs_controls.png', dpi=150)
 
 # LPPL sensitivity
 window = 500
@@ -97,13 +161,11 @@ plt.title('LPPL critical time distribution (rolling fits)')
 plt.tight_layout()
 plt.savefig('figures/lppl_tc_hist.png', dpi=150)
 
-# Prob model (3m only) + empirical baselines (6m/12m)
+# Prob model (3m only)
 feat = build_features(ai_basket, spy)
-
 labels_3m = build_labels(ai_basket, horizon=63)
 probs_3m = walk_forward_prob(feat, labels_3m, split_date='2022-01-01')
 
-# align labels
 lab = labels_3m.reindex(probs_3m.index).dropna()
 probs_3m = probs_3m.reindex(lab.index)
 
@@ -111,7 +173,6 @@ brier = brier_score_loss(lab, probs_3m)
 auc = roc_auc_score(lab, probs_3m)
 base_3m = lab.mean()
 
-# empirical baselines for 6m/12m
 labels_6m = build_labels(ai_basket, horizon=126)
 labels_12m = build_labels(ai_basket, horizon=252)
 base_6m = labels_6m.mean()
@@ -124,8 +185,6 @@ metrics_df = pd.DataFrame([
 ], columns=['Horizon','Brier','AUC','Base rate','Prob mean','Prob last','Method'])
 metrics_df.to_csv('results/table_crash_probs.csv', index=False)
 
-# calibration curve (3m)
-from sklearn.calibration import calibration_curve
 frac_pos, mean_pred = calibration_curve(lab, probs_3m, n_bins=10)
 plt.figure()
 plt.plot(mean_pred, frac_pos, marker='o')
@@ -139,13 +198,27 @@ plt.savefig('figures/calibration_3m.png', dpi=150)
 # Save probs
 probs_3m.to_csv('results/crash_prob_3m.csv')
 
-# Robustness
-# Alternative universes
-semi = ['NVDA','AMD','AVGO','ASML','SMH']
-ex_tsla = [t for t in ai_prices.columns if t != 'TSLA']
+# Tables
+stats_tbl.to_latex('results/table_descriptive.tex', float_format="%.4f")
+metrics_df.to_latex('results/table_crash_probs.tex', index=False, float_format="%.4f")
 
+# GSADF comparison table
+comp = pd.DataFrame([
+    ['AI raw', sadf_ai, sgsadf_ai],
+    ['AI residual', sadf_ai_res, sgsadf_ai_res],
+    ['Non-AI tech raw', sadf_nonai, sgsadf_nonai],
+    ['Non-AI tech residual', sadf_nonai_res, sgsadf_nonai_res],
+    ['AI semis raw', sadf_ai_semi, sgsadf_ai_semi],
+    ['AI semis residual', sadf_ai_semi_res, sgsadf_ai_semi_res],
+    ['Non-AI semis raw', sadf_nonai_semi, sgsadf_nonai_semi],
+    ['Non-AI semis residual', sadf_nonai_semi_res, sgsadf_nonai_semi_res],
+], columns=['Series','SADF','GSADF'])
+comp.to_csv('results/table_gsadf_compare.csv', index=False)
+comp.to_latex('results/table_gsadf_compare.tex', index=False, float_format="%.4f")
+
+# Robustness
 rob_rows = []
-for name, basket in [('baseline', ai_prices), ('semis', ai_prices[semi]), ('no tsla', ai_prices[ex_tsla])]:
+for name, basket in [('baseline', ai_prices), ('semis', ai_prices[['NVDA','AMD','AVGO','ASML','SMH']]), ('no tsla', ai_prices[[c for c in ai_prices.columns if c!='TSLA']])]:
     b = basket.pct_change().mean(axis=1).add(1).cumprod().dropna()
     s = sadf(b, step=5)
     labels15 = build_labels(b, horizon=63, drawdown=0.15).mean()
@@ -163,8 +236,10 @@ rob_df.to_latex('results/table_robustness.tex', index=False, float_format="%.4f"
 
 # Save stats
 with open('results/stats.txt','w') as f:
-    f.write(f"SADF: {sadf_stat}\n")
-    f.write(f"GSADF (sub-sampled): {gsadf_stat}\n")
+    f.write(f"SADF_AI: {sadf_ai}\n")
+    f.write(f"GSADF_AI: {sgsadf_ai}\n")
+    f.write(f"SADF_AI_resid: {sadf_ai_res}\n")
+    f.write(f"GSADF_AI_resid: {sgsadf_ai_res}\n")
     f.write(f"ADF_crit_95: {crit}\n")
     f.write(f"CrashProb_3m_mean: {probs_3m.mean()}\n")
     f.write(f"CrashProb_3m_last: {probs_3m.iloc[-1]}\n")
@@ -175,9 +250,5 @@ with open('results/stats.txt','w') as f:
     f.write(f"LPPL_tc_q10: {tc_q.get(0.1)}\n")
     f.write(f"LPPL_tc_q50: {tc_q.get(0.5)}\n")
     f.write(f"LPPL_tc_q90: {tc_q.get(0.9)}\n")
-
-# LaTeX tables
-stats_tbl.to_latex('results/table_descriptive.tex', float_format="%.4f")
-metrics_df.to_latex('results/table_crash_probs.tex', index=False, float_format="%.4f")
 
 print('done')
