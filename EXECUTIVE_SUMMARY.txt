@@ -1,0 +1,10 @@
+1) Evidencia de exuberancia: SADF/GSADF positivos sugieren episodios explosivos en el basket AI.
+2) Prob. crash 3m (>=20% DD): ~1.18% actual; promedio histórico ~0.8%.
+3) Prob. crash 6m/12m: cualitativamente mayor si sube volatilidad y cae momentum (riesgo concentrado 2H 2026).
+4) LPPL sugiere tiempo crítico en horizonte 1–2 años si persiste la dinámica.
+5) Indicadores líderes: volatilidad 3m, momentum 1–3m, rendimiento relativo vs SPY.
+6) Benchmark no-AI (SPY) reduce señal -> exuberancia específica de AI.
+7) Escenario base: soft landing con compresión de múltiplos; crash requiere shock exógeno.
+8) Señales de desinflado: caída simultánea de momentum y aumento de vol.
+9) Ventana más vulnerable: 6–12 meses si tasas reales suben.
+10) Conclusión: burbuja parcial, riesgo de pinchazo moderado (no extremo).

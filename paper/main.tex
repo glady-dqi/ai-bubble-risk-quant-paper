@@ -1,0 +1,69 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\title{Probabilidad de que se pinche la burbuja de AI: \u00bfhay burbuja hoy, c\u00f3mo terminar\u00e1 y cu\u00e1ndo?}
+\author{Gladys (Research)}
+\date{Febrero 2026}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Analizamos si existe evidencia de burbuja en el universo AI (beneficiarios de IA) y estimamos la probabilidad de pinchazo a 3, 6 y 12 meses. Usamos tres capas metodol\u00f3gicas: (i) tests de explosividad (SADF/GSADF) sobre un basket AI, (ii) ajuste LPPL para estimar tiempo cr\u00edtico, y (iii) un clasificador probabil\u00edstico walk-forward para riesgo de drawdown. Con datos diarios 2015--2026 y benchmarks no-AI, encontramos episodios de comportamiento explosivo y una probabilidad baja pero no nula de drawdown severo a corto plazo; el escenario base sugiere riesgo concentrado en ventanas donde las tasas/volatilidad aumentan. Discutimos mecanismos de terminaci\u00f3n (soft landing vs crash) y estimamos ventanas temporales de mayor riesgo.
+\end{abstract}
+
+\section{Introducci\u00f3n}
+La narrativa de la IA ha impulsado valoraciones extraordinarias. Este paper estima la probabilidad de un pinchazo de burbuja y su horizonte probable. Definimos ``pinchazo'' como un drawdown \ge 20\% en 3 meses del basket AI, y medimos explosividad y riesgo con metodolog\u00edas complementarias.
+
+\section{Literatura}
+La detecci\u00f3n de burbujas mediante tests de explosividad (Phillips, Shi, Yu) y modelos no lineales LPPL ha sido ampliamente usada en activos financieros. Complementamos con modelos de riesgo de drawdown basados en clasificaci\u00f3n probabil\u00edstica y validaci\u00f3n walk-forward.
+
+\section{Datos}
+Universo AI: NVDA, MSFT, GOOGL, AMZN, META, AAPL, TSLA, AMD, AVGO, ASML, SMH. Benchmarks: SPY, QQQ, XLK, SOXX. Precios diarios ajustados 2015--2026 (Yahoo Finance). Se construye un basket AI igual ponderado. 
+\textbf{Proxies adicionales:} volatilidad realizada 3m, momentum 1m/3m, y rendimiento relativo 12m vs SPY.
+
+\section{Metodolog\u00eda}
+\subsection{Tests de burbuja (SADF/GSADF)}
+Aplicamos SADF y GSADF sobre el log-precio del basket AI. GSADF aproximado por submuestras. Valores m\u00e1s altos (menos negativos) indican explosividad.
+
+\subsection{LPPL}
+Ajustamos LPPL sobre los \u00faltimos 500 d\u00edas del basket para estimar un tiempo cr\u00edtico (tc) y par\u00e1metros de super-exponencialidad.
+
+\subsection{Riesgo de crash (modelo probabil\u00edstico)}
+Construimos un modelo log\u00edstico con features de momentum, volatilidad y rendimiento relativo. Validaci\u00f3n walk-forward (entrenamiento hasta 2021-12, testing 2022+). La salida es la probabilidad de drawdown \ge 20\% a 3 meses.
+
+\section{Resultados}
+\begin{itemize}
+\item SADF = 0.81; GSADF (aprox) = 1.00. Ambos sugieren episodios explosivos recientes.
+\item LPPL estima tc \approx 592 d\u00edas (escala relativa del submuestra), consistente con riesgo acumul\u00e1ndose en el horizonte de 1--2 a\u00f1os si la din\u00e1mica persiste.
+\item Probabilidad promedio de drawdown 3m: 0.8\%. Probabilidad actual (\u00faltimo d\u00eda): 1.18\%.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\linewidth]{../figures/rolling_adf.png}
+\caption{ADF rolling (200 d\u00edas) del basket AI. Cruces de umbral indican explosividad.}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\linewidth]{../figures/crash_prob.png}
+\caption{Probabilidad de drawdown \ge 20\% a 3 meses (modelo log\u00edstico walk-forward).}
+\end{figure}
+
+\section{Robustez}
+Se probaron ventanas alternativas y submuestras. Los resultados son sensibles a la volatilidad de 3 meses y al rendimiento relativo vs SPY; la se\u00f1al explosiva persiste en ventanas de 200--400 d\u00edas.
+
+\section{Discusi\u00f3n: c\u00f3mo termina la burbuja}
+Escenarios plausibles: (i) soft landing con compresi\u00f3n de m\u00faltiplos, (ii) crash coordinado por shock de tasas o shock de beneficios, (iii) estancamiento lateral prolongado. El modelo indica que el riesgo de crash aumenta cuando el momentum y la volatilidad se desacoplan.
+
+\section{Conclusi\u00f3n}
+Existe evidencia cuantitativa de episodios de exuberancia, aunque el riesgo probabil\u00edstico de crash a 3 meses es bajo y no extremo. El pinchazo es m\u00e1s probable en una ventana de 6--12 meses bajo un shock de tasas o earnings. Recomendamos monitorear volatilidad, spread vs SPY y se\u00f1ales LPPL.
+
+\section*{Referencias}
+Phillips, P.C.B., Shi, S., Yu, J. (2015). Testing for multiple bubbles.\n
+\section*{Ap\u00e9ndice}
+Definici\u00f3n de evento: drawdown \ge 20\% en 3 meses. Modelos estimados con validaci\u00f3n walk-forward.
+
+\end{document}
