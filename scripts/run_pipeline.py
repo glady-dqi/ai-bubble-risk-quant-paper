@@ -28,19 +28,34 @@ plt.savefig('figures/rolling_adf.png', dpi=150)
 # LPPL
 params = fit_lppl(ai_basket.tail(500))
 
-# Prob model
+# Prob model (3m) + empirical 6/12m
 feat = build_features(ai_basket, spy)
-labels = build_labels(ai_basket)
-probs = walk_forward_prob(feat, labels, split_date='2022-01-01')
+labels_3m = build_labels(ai_basket, horizon=63)
+probs_3m = walk_forward_prob(feat, labels_3m, split_date='2022-01-01')
+
+# Empirical baseline for 6m/12m
+labels_6m = build_labels(ai_basket, horizon=126)
+labels_12m = build_labels(ai_basket, horizon=252)
+emp_6m = labels_6m.mean()
+emp_12m = labels_12m.mean()
+
+# Plot 3m prob
 plt.figure()
-probs.plot()
+probs_3m.plot()
 plt.title('Crash Probability (3m, 20% DD)')
-plt.savefig('figures/crash_prob.png', dpi=150)
+plt.savefig('figures/crash_prob_3m.png', dpi=150)
+
+# Save probs
+probs_3m.to_csv('results/crash_prob_3m.csv')
 
 pd.Series(params, index=['A','B','C','tc','m','w','phi']).to_csv('results/lppl_params.csv')
 
 with open('results/stats.txt','w') as f:
     f.write(f"SADF: {sadf_stat}\n")
-    f.write(f"GSADF (approx): {gsadf_stat}\n")
+    f.write(f"GSADF (approx, sub-sampled): {gsadf_stat}\n")
+    f.write(f"CrashProb_3m_mean: {probs_3m.mean()}\n")
+    f.write(f"CrashProb_3m_last: {probs_3m.iloc[-1]}\n")
+    f.write(f"CrashProb_6m_empirical: {emp_6m}\n")
+    f.write(f"CrashProb_12m_empirical: {emp_12m}\n")
 
 print('done')

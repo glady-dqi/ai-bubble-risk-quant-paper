@@ -3,67 +3,72 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{hyperref}
-\title{Probabilidad de que se pinche la burbuja de AI: \u00bfhay burbuja hoy, c\u00f3mo terminar\u00e1 y cu\u00e1ndo?}
+\title{Probability of an AI Bubble Burst: Is There a Bubble Today, How Will It End, and When?}
 \author{Gladys (Research)}
-\date{Febrero 2026}
+\date{February 2026}
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Analizamos si existe evidencia de burbuja en el universo AI (beneficiarios de IA) y estimamos la probabilidad de pinchazo a 3, 6 y 12 meses. Usamos tres capas metodol\u00f3gicas: (i) tests de explosividad (SADF/GSADF) sobre un basket AI, (ii) ajuste LPPL para estimar tiempo cr\u00edtico, y (iii) un clasificador probabil\u00edstico walk-forward para riesgo de drawdown. Con datos diarios 2015--2026 y benchmarks no-AI, encontramos episodios de comportamiento explosivo y una probabilidad baja pero no nula de drawdown severo a corto plazo; el escenario base sugiere riesgo concentrado en ventanas donde las tasas/volatilidad aumentan. Discutimos mecanismos de terminaci\u00f3n (soft landing vs crash) y estimamos ventanas temporales de mayor riesgo.
+We quantify whether AI-related equities exhibit bubble-like dynamics and estimate the probability of a severe drawdown at 3, 6, and 12 months. We implement three complementary layers: (i) explosive root tests (SADF/GSADF), (ii) a nonlinear LPPL model to estimate critical-time dynamics, and (iii) a probabilistic drawdown model with walk-forward validation. Using daily prices (2015--2026) for a replicable AI beneficiary basket and non-AI benchmarks, we find statistically suggestive evidence of explosive episodes and a low but non-zero near-term drawdown risk. We separate statistical evidence from economic interpretation and document limitations.
 \end{abstract}
 
-\section{Introducci\u00f3n}
-La narrativa de la IA ha impulsado valoraciones extraordinarias. Este paper estima la probabilidad de un pinchazo de burbuja y su horizonte probable. Definimos ``pinchazo'' como un drawdown \ge 20\% en 3 meses del basket AI, y medimos explosividad y riesgo con metodolog\u00edas complementarias.
+\section{Introduction}
+The AI narrative has driven sharp repricing in large-cap technology and semiconductor beneficiaries. This paper assesses whether current dynamics are consistent with a bubble and estimates the timing and probability of a burst. We define a ``burst'' as a $\ge$20\% drawdown over the next 3 months, and we triangulate evidence using explosive-root tests, LPPL critical-time estimation, and a calibrated probabilistic model.
 
-\section{Literatura}
-La detecci\u00f3n de burbujas mediante tests de explosividad (Phillips, Shi, Yu) y modelos no lineales LPPL ha sido ampliamente usada en activos financieros. Complementamos con modelos de riesgo de drawdown basados en clasificaci\u00f3n probabil\u00edstica y validaci\u00f3n walk-forward.
+\section{Related Literature}
+Our methodology follows Phillips, Shi, and Yu (2015) for bubble detection via explosive-root tests, and the LPPL literature for nonlinear bubble dynamics. We complement with probabilistic classification of drawdown risk using walk-forward validation, avoiding look-ahead bias.
 
-\section{Datos}
-Universo AI: NVDA, MSFT, GOOGL, AMZN, META, AAPL, TSLA, AMD, AVGO, ASML, SMH. Benchmarks: SPY, QQQ, XLK, SOXX. Precios diarios ajustados 2015--2026 (Yahoo Finance). Se construye un basket AI igual ponderado. 
-\textbf{Proxies adicionales:} volatilidad realizada 3m, momentum 1m/3m, y rendimiento relativo 12m vs SPY.
+\section{Data and Proxies}
+\textbf{AI Universe (replicable):} NVDA, MSFT, GOOGL, AMZN, META, AAPL, TSLA, AMD, AVGO, ASML, SMH.\
+\textbf{Benchmarks:} SPY, QQQ, XLK, SOXX.\
+Daily adjusted prices (2015--2026) are sourced from Yahoo Finance. We construct an equal-weight AI basket and use SPY as a non-AI benchmark. Proxies include 1--3 month momentum, 3-month realized volatility, and 12-month relative performance vs. SPY.
 
-\section{Metodolog\u00eda}
-\subsection{Tests de burbuja (SADF/GSADF)}
-Aplicamos SADF y GSADF sobre el log-precio del basket AI. GSADF aproximado por submuestras. Valores m\u00e1s altos (menos negativos) indican explosividad.
+\section{Methodology}
+\subsection{Explosive-Root Tests (SADF/GSADF)}
+We compute SADF and GSADF on log-price of the AI basket. Positive test statistics imply evidence against a unit root in favor of explosiveness. We report statistics and interpret them relative to the right-tail of the ADF distribution, noting that exact critical values require bootstrapping.
 
 \subsection{LPPL}
-Ajustamos LPPL sobre los \u00faltimos 500 d\u00edas del basket para estimar un tiempo cr\u00edtico (tc) y par\u00e1metros de super-exponencialidad.
+We fit a LPPL model on the last 500 trading days to estimate critical-time dynamics and super-exponential growth. The estimated critical time is reported in relative units (days ahead in the window).
 
-\subsection{Riesgo de crash (modelo probabil\u00edstico)}
-Construimos un modelo log\u00edstico con features de momentum, volatilidad y rendimiento relativo. Validaci\u00f3n walk-forward (entrenamiento hasta 2021-12, testing 2022+). La salida es la probabilidad de drawdown \ge 20\% a 3 meses.
+\subsection{Probabilistic Drawdown Model}
+We build a logistic model using momentum, volatility, and relative performance features. Labels are defined as a future drawdown $\ge$20\% over horizons 3, 6, and 12 months. We use walk-forward validation with a 2022+ test period to avoid look-ahead.
 
-\section{Resultados}
+\section{Results}
 \begin{itemize}
-\item SADF = 0.81; GSADF (aprox) = 1.00. Ambos sugieren episodios explosivos recientes.
-\item LPPL estima tc \approx 592 d\u00edas (escala relativa del submuestra), consistente con riesgo acumul\u00e1ndose en el horizonte de 1--2 a\u00f1os si la din\u00e1mica persiste.
-\item Probabilidad promedio de drawdown 3m: 0.8\%. Probabilidad actual (\u00faltimo d\u00eda): 1.18\%.
+\item \textbf{Explosive tests:} SADF = 0.71; GSADF (sub-sampled) = 1.00. Both are positive, suggesting episodic explosiveness. Critical values are not bootstrapped here, so we treat these as indicative rather than definitive.
+\item \textbf{LPPL:} The fitted critical-time parameter implies elevated risk in the medium term (1--2 years), conditional on continuation of the current regime.
+\item \textbf{Crash probabilities:} The 3-month logistic model yields a mean probability of 0.79\% and a latest estimate of 1.19\%. For 6- and 12-month horizons we report empirical (unconditional) frequencies of 20\% drawdowns: 6m = 3.08\%, 12m = 3.51\%. These longer-horizon frequencies should be interpreted as baseline risk, not conditional forecasts.
 \end{itemize}
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.85\linewidth]{../figures/rolling_adf.png}
-\caption{ADF rolling (200 d\u00edas) del basket AI. Cruces de umbral indican explosividad.}
+\caption{Rolling ADF (200-day) for the AI basket. Crossings above the threshold indicate local explosiveness.}
 \end{figure}
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.85\linewidth]{../figures/crash_prob.png}
-\caption{Probabilidad de drawdown \ge 20\% a 3 meses (modelo log\u00edstico walk-forward).}
+\includegraphics[width=0.85\linewidth]{../figures/crash_prob_3m.png}
+\caption{Predicted 3-month probability of a 20\% drawdown (walk-forward logistic model).}
 \end{figure}
 
-\section{Robustez}
-Se probaron ventanas alternativas y submuestras. Los resultados son sensibles a la volatilidad de 3 meses y al rendimiento relativo vs SPY; la se\u00f1al explosiva persiste en ventanas de 200--400 d\u00edas.
+\section{Economic Interpretation vs. Statistical Evidence}
+\textbf{Statistical evidence:} Positive SADF/GSADF and LPPL curvature indicate episodes consistent with bubble-like dynamics.\
+\textbf{Economic interpretation:} These signals coincide with rapid repricing and elevated concentration in AI beneficiaries, but do not imply an imminent crash.\
+\textbf{Limitations:} (i) GSADF is sub-sampled for computational feasibility; (ii) critical values are not bootstrapped; (iii) 3m crash probabilities are model-based and should be interpreted as relative risk indicators, while 6/12m are unconditional baselines.
 
-\section{Discusi\u00f3n: c\u00f3mo termina la burbuja}
-Escenarios plausibles: (i) soft landing con compresi\u00f3n de m\u00faltiplos, (ii) crash coordinado por shock de tasas o shock de beneficios, (iii) estancamiento lateral prolongado. El modelo indica que el riesgo de crash aumenta cuando el momentum y la volatilidad se desacoplan.
+\section{Robustness}
+We performed sub-sample checks and alternative rolling windows (200--400 days). Results are robust in sign but sensitive to volatility and relative performance inputs. Walk-forward validation mitigates look-ahead bias.
 
-\section{Conclusi\u00f3n}
-Existe evidencia cuantitativa de episodios de exuberancia, aunque el riesgo probabil\u00edstico de crash a 3 meses es bajo y no extremo. El pinchazo es m\u00e1s probable en una ventana de 6--12 meses bajo un shock de tasas o earnings. Recomendamos monitorear volatilidad, spread vs SPY y se\u00f1ales LPPL.
+\section{Conclusion}
+The evidence suggests episodic exuberance in AI beneficiaries, with a low but non-zero probability of a severe drawdown in the next 3--12 months. The most plausible outcome is a soft landing; a crash scenario is more likely under macro shocks (rates or earnings). Monitoring volatility and relative performance remains crucial.
 
-\section*{Referencias}
-Phillips, P.C.B., Shi, S., Yu, J. (2015). Testing for multiple bubbles.\n
-\section*{Ap\u00e9ndice}
-Definici\u00f3n de evento: drawdown \ge 20\% en 3 meses. Modelos estimados con validaci\u00f3n walk-forward.
+\section*{References}
+Phillips, P.C.B., Shi, S., Yu, J. (2015). Testing for multiple bubbles.
+
+\section*{Appendix}
+Event definition: drawdown $\ge$20\% over 3/6/12 months.\\
+Models estimated with walk-forward validation (train $\le$ 2021-12, test $\ge$ 2022-01).
 
 \end{document}

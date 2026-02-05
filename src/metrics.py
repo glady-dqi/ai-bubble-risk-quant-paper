@@ -2,10 +2,10 @@ import numpy as np
 import pandas as pd
 from statsmodels.tsa.stattools import adfuller
 
-def sadf(series, min_window=50):
+def sadf(series, min_window=50, step=5):
     y = np.log(series.dropna())
     max_adf = -np.inf
-    for end in range(min_window, len(y)):
+    for end in range(min_window, len(y), step):
         stat = adfuller(y.iloc[:end], maxlag=1, regression='c', autolag=None)[0]
         max_adf = max(max_adf, stat)
     return max_adf
